@@ -13,10 +13,11 @@ def fetch_weather():
     return res.json()
 
 def get_hour_index(data, dt):
-    target_str = dt.strftime("%Y-%m-%dT%H:00")
-    if target_str in data["hourly"]["time"]:
-        return data["hourly"]["time"].index(target_str)
-    return None
+    target = dt.replace(minute=0, second=0, microsecond=0)
+    times = [datetime.strptime(t, "%Y-%m-%dT%H:%M") for t in data["hourly"]["time"]]
+    closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - target))
+    return closest_idx if abs(times[closest_idx] - target) <= timedelta(hours=1) else None
+
 
 def build_entry(data, hour_dt):
     idx = get_hour_index(data, hour_dt)
