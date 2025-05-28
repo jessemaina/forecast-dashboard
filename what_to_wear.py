@@ -12,14 +12,11 @@ def fetch_weather():
     res.raise_for_status()
     return res.json()
 
-from datetime import datetime, timedelta
-
 def get_hour_index(data, dt):
-    print("🔍 Using updated get_hour_index")
-    target = dt.replace(minute=0, second=0, microsecond=0)
-    times = [datetime.strptime(t, "%Y-%m-%dT%H:%M") for t in data["hourly"]["time"]]
-    closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - target))
-    return closest_idx if abs(times[closest_idx] - target) <= timedelta(hours=1) else None
+    target_str = dt.strftime("%Y-%m-%dT%H:00")
+    if target_str in data["hourly"]["time"]:
+        return data["hourly"]["time"].index(target_str)
+    return None
 
 def build_entry(data, hour_dt):
     idx = get_hour_index(data, hour_dt)
@@ -131,24 +128,19 @@ def main():
     now = datetime.now()
 
     # RIGHT NOW
-idx = get_hour_index(data, rounded_now)
-if idx is not None:
-    entry = {
-        "apparent_temp": data["hourly"]["apparent_temperature"][idx],
-        "humidity": data["hourly"]["relative_humidity_2m"][idx],
-        "rain": data["hourly"]["rain"][idx],
-        "showers": data["hourly"]["showers"][idx],
-        "precip": data["hourly"]["precipitation"][idx],
-        "wind": data["hourly"]["wind_speed_10m"][idx],
-        "cloud": data["hourly"]["cloud_cover"][idx],
-        "is_day": bool(data["hourly"]["is_day"][idx]),
-    }
-    timestamp_used = data["hourly"]["time"][idx]
-    st.caption(f"Right Now is based on data for: {timestamp_used}")
-    render_outfit_line("Right Now", entry)
-else:
-    st.caption("⚠️ No data available for current time")
-
+    current_idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
+    if current_idx is not None:
+        current_entry = {
+            "apparent_temp": data["hourly"]["apparent_temperature"][current_idx],
+            "humidity": data["hourly"]["relative_humidity_2m"][current_idx],
+            "rain": data["hourly"]["rain"][current_idx],
+            "showers": data["hourly"]["showers"][current_idx],
+            "precip": data["hourly"]["precipitation"][current_idx],
+            "wind": data["hourly"]["wind_speed_10m"][current_idx],
+            "cloud": data["hourly"]["cloud_cover"][current_idx],
+            "is_day": bool(data["hourly"]["is_day"][current_idx]),
+        }
+        display_outfit("Right Now", current_entry)
 
     # TODAY AND TOMORROW
     for offset in [0, 1]:
