@@ -80,19 +80,25 @@ with col1:
     st.subheader("🧥 What to Wear")
 
     # Right Now
-    idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
-    if idx is not None:
-        entry = {
-            "apparent_temp": data["hourly"]["apparent_temperature"][idx],
-            "humidity": data["hourly"]["relative_humidity_2m"][idx],
-            "rain": data["hourly"]["rain"][idx],
-            "showers": data["hourly"]["showers"][idx],
-            "precip": data["hourly"]["precipitation"][idx],
-            "wind": data["hourly"]["wind_speed_10m"][idx],
-            "cloud": data["hourly"]["cloud_cover"][idx],
-            "is_day": bool(data["hourly"]["is_day"][idx]),
-        }
-        render_outfit_line("Right Now", entry)
+rounded_now = now.replace(minute=0, second=0, microsecond=0)
+idx = get_hour_index(data, rounded_now)
+if idx is not None:
+    entry = {
+        "apparent_temp": data["hourly"]["apparent_temperature"][idx],
+        "humidity": data["hourly"]["relative_humidity_2m"][idx],
+        "rain": data["hourly"]["rain"][idx],
+        "showers": data["hourly"]["showers"][idx],
+        "precip": data["hourly"]["precipitation"][idx],
+        "wind": data["hourly"]["wind_speed_10m"][idx],
+        "cloud": data["hourly"]["cloud_cover"][idx],
+        "is_day": bool(data["hourly"]["is_day"][idx]),
+    }
+    timestamp_used = data["hourly"]["time"][idx]
+    st.caption(f"Right Now is based on data for: {timestamp_used}")
+    render_outfit_line("Right Now", entry)
+else:
+    st.caption("⚠️ No data available for current time")
+
 
     # Future 6 time blocks
     TIME_LABELS = {5: "5am Morning Walk", 12: "12pm Lunch", 21: "9pm Night Time"}
