@@ -35,8 +35,39 @@ st.set_page_config(page_title="Weather Dashboard", layout="wide")
 
 # === Header ===
 st.title("🌦️ Forecast")
+from dateutil import parser
+
+# Display today's date
 st.markdown(f"**Date:** {now.strftime('%A, %B %d, %Y')}")
-st.markdown("---")
+
+# Is it raining now?
+current_idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
+raining_now = False
+if current_idx is not None:
+    rain_now = data["hourly"]["rain"][current_idx]
+    showers_now = data["hourly"]["showers"][current_idx]
+    raining_now = (rain_now > 0.1) or (showers_now > 0.1)
+
+    st.markdown(f"**🌧️ Raining Now?** {'Yes' if raining_now else 'No'}")
+
+# Find next rain
+next_rain_time = None
+for i, (t, rain, shower) in enumerate(zip(data["hourly"]["time"], data["hourly"]["rain"], data["hourly"]["showers"])):
+    dt = datetime.strptime(t, "%Y-%m-%dT%H:%M").replace(tzinfo=pytz.utc).astimezone(perth_tz)
+    if dt > now and (rain > 0.1 or shower > 0.1):
+        next_rain_time = dt
+        break
+
+if next_rain_time:
+    delta = next_rain_time - now
+    if delta < timedelta(hours=2):
+        mins = int(delta.total_seconds() // 60)
+        st.markdown(f"**🌧️ Next Rain:** In {mins} minutes")
+    else:
+        st.markdown(f"**🌧️ Next Rain:** {next_rain_time.strftime('%A at %-I:%M %p')}")
+else:
+    st.markdown("**🌧️ Next Rain:** No rain on the horizon")
+
 
 # === Get Data Once ===
 data = fetch_weather()
