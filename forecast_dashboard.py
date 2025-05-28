@@ -25,7 +25,7 @@ st.markdown("---")
 data = fetch_weather()
 now = datetime.now()
 
-# === Smart, Clean Outfit Renderer ===
+# === Outfit Renderer ===
 def render_outfit_line(label, entry):
     outfit = outfit_logic(entry)
     temp = round(entry["apparent_temp"])
@@ -91,12 +91,11 @@ with col1:
         st.caption("⚠️ No data available for current time")
 
     TIME_LABELS = {5: "5am Morning Walk", 12: "12pm Lunch", 21: "9pm Night Time"}
-    hours_to_check = [5, 12, 21]
     count = 0
     max_forecasts = 6
 
     for day_offset in range(1, 5):
-        for hour in hours_to_check:
+        for hour in [5, 12, 21]:
             dt = now.replace(hour=hour, minute=0, second=0, microsecond=0) + timedelta(days=day_offset)
             if dt > now:
                 entry = build_entry(data, dt)
@@ -109,17 +108,11 @@ with col1:
         if count >= max_forecasts:
             break
 
-    st.subheader("📅 9-Day Forecast")
-    num_days = len(data["daily"]["time"])
-
-    for i in range(num_days):
+    st.subheader("📅 7-Day Forecast")
+    for i in range(7):
         date_str = data["daily"]["time"][i]
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
         day_label = date_obj.strftime("%A")
-        if i < 3:
-            day_label += " (past)"
-        elif i == 3:
-            day_label += " (today)"
 
         sunrise = data["daily"]["sunrise"][i][-5:]
         sunset = data["daily"]["sunset"][i][-5:]
