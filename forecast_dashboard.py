@@ -44,7 +44,7 @@ if current_idx is not None:
     rain_now = data["hourly"]["rain"][current_idx]
     showers_now = data["hourly"]["showers"][current_idx]
     raining_now = (rain_now > 0.1) or (showers_now > 0.1)
-    st.markdown(f"**🌧️ Raining Now?** {'Yes' if raining_now else 'No'}")
+    st.markdown(f"**🌧️ Is It Raining Now?** {'Yes' if raining_now else 'No'}")
 
 # === Next Rain Time ===
 next_rain_time = None
