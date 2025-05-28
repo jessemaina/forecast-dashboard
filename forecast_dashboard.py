@@ -229,7 +229,7 @@ with col2:
     st.subheader("🌄 Twilight Times (Today)")
 
     try:
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = now.strftime("%Y-%m-%d")
         results = fetch_sun_times(today_str)
         perth_tz = pytz.timezone("Australia/Perth")
 
