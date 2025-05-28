@@ -1,10 +1,15 @@
 import streamlit as st
 from datetime import datetime, timedelta
+import pytz  # make sure this is here
+
+# Set timezone
+perth_tz = pytz.timezone("Australia/Perth")
+now = datetime.now(perth_tz)
+
 import io
 import contextlib
-
-import pytz
 import requests
+
 
 def fetch_sun_times(date: str):
     lat = -31.8931
