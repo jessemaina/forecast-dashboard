@@ -17,7 +17,7 @@ from uber_demand_forecast import generate_forecast
 st.set_page_config(page_title="Weather Dashboard", layout="wide")
 
 # === Header ===
-st.title("🌦️ Forecast")
+st.title("🌦️ Your Daily Forecast Assistant")
 st.markdown(f"**Date:** {datetime.now().strftime('%A, %B %d, %Y')}")
 st.markdown("---")
 
@@ -32,7 +32,6 @@ def render_outfit_line(label, entry):
     rain = entry["rain"]
     showers = entry["showers"]
 
-    # Emoji logic
     emojis = ""
     if temp < 7:
         emojis += "❄️❄️❄️"
@@ -40,36 +39,32 @@ def render_outfit_line(label, entry):
         emojis += "❄️❄️"
     elif temp < 17:
         emojis += "❄️"
-
     if temp > 32:
         emojis += "☀️☀️☀️"
     elif temp > 23:
         emojis += "☀️☀️"
     elif temp > 18:
         emojis += "☀️"
-
     if rain > 0.3 or showers > 0.3:
         emojis += " 🌧️"
 
-    # Flatten and filter clothing items
-    all_items = outfit["Top"].split(", ") + outfit["Bottom"].split(", ") + outfit["Extras"].split(", ")
-    cleaned = [item.strip().capitalize() for item in all_items if item.strip().lower() != "none"]
+    items = outfit["Top"].split(", ") + outfit["Bottom"].split(", ") + outfit["Extras"].split(", ")
+    cleaned = [item.strip().capitalize() for item in items if item.strip().lower() != "none"]
 
-    # Normalize: Remove 'T-shirt' if also wearing jacket, hoodie, or jumper
-    outerwear_keywords = ["jacket", "hoodie", "jumper"]
-    has_outerwear = any(any(k in item.lower() for k in outerwear_keywords) for item in cleaned)
-    final_items = []
+    outerwear = ["jacket", "hoodie", "jumper"]
+    has_outerwear = any(any(k in item.lower() for k in outerwear) for item in cleaned)
+
+    final = []
     for item in cleaned:
         if item.lower() == "t-shirt" and has_outerwear:
             continue
-        if "thermal" in item.lower() and "Thermals" not in final_items:
-            final_items.append("Thermals")
+        if "thermal" in item.lower() and "Thermals" not in final:
+            final.append("Thermals")
         elif "thermal" not in item.lower():
-            final_items.append(item)
+            final.append(item)
 
-    # Output block
     st.markdown(f"**⏰ {label} {emojis} {temp}°**")
-    st.markdown(", ".join(final_items) + ".")
+    st.markdown(", ".join(final) + ".")
     st.markdown("")
 
 # === Layout Columns ===
@@ -79,7 +74,6 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("🧥 What to Wear")
 
-    # Right Now
     idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
     if idx is not None:
         entry = {
@@ -93,8 +87,9 @@ with col1:
             "is_day": bool(data["hourly"]["is_day"][idx]),
         }
         render_outfit_line("Right Now", entry)
+    else:
+        st.caption("⚠️ No data available for current time")
 
-    # Future 6 time blocks
     TIME_LABELS = {5: "5am Morning Walk", 12: "12pm Lunch", 21: "9pm Night Time"}
     hours_to_check = [5, 12, 21]
     count = 0
@@ -106,18 +101,18 @@ with col1:
             if dt > now:
                 entry = build_entry(data, dt)
                 if "error" not in entry:
-                    time_label = f"{TIME_LABELS[hour]} ({dt.strftime('%A')})"
-                    render_outfit_line(time_label, entry)
+                    label = f"{TIME_LABELS[hour]} ({dt.strftime('%A')})"
+                    render_outfit_line(label, entry)
                     count += 1
                 if count >= max_forecasts:
                     break
         if count >= max_forecasts:
             break
 
-    # === 9-Day Weather Summary ===
     st.subheader("📅 9-Day Forecast")
+    num_days = len(data["daily"]["time"])
 
-    for i in range(9):
+    for i in range(num_days):
         date_str = data["daily"]["time"][i]
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
         day_label = date_obj.strftime("%A")
@@ -135,7 +130,6 @@ with col1:
         app_min = round(data["daily"]["apparent_temperature_min"][i])
         rain = round(data["daily"]["precipitation_sum"][i], 1)
 
-        # Determine weather emoji
         if rain > 5:
             emoji = "🌧️"
         elif rain > 1:
@@ -156,7 +150,6 @@ with col1:
         st.markdown(f"- 🌡️ **Max**: {t_max}° (Feels {app_max}°) | **Min**: {t_min}° (Feels {app_min}°)")
         st.markdown(f"- 🌧️ **Rain**: {rain} mm")
         st.markdown("")
-
 
 # === Column 2: Clothesline Forecast ===
 with col2:
