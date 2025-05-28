@@ -164,25 +164,23 @@ with col2:
         check_washing_days(data)
     st.text(buf.getvalue())
 
-from datetime import timezone
-import pytz
+    st.subheader("🌄 Twilight Times (Today)")
 
-st.subheader("🌄 Twilight Times (Today)")
+    try:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        results = fetch_sun_times(today_str)
+        perth_tz = pytz.timezone("Australia/Perth")
 
-try:
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    results = fetch_sun_times(today_str)
-    perth_tz = pytz.timezone("Australia/Perth")
+        def local(t): return datetime.fromisoformat(t).astimezone(perth_tz).strftime("%H:%M")
 
-    def local(t): return datetime.fromisoformat(t).astimezone(perth_tz).strftime("%H:%M")
+        st.markdown(f"- 🌅 **Sunrise**: {local(results['sunrise'])}")
+        st.markdown(f"- 🌇 **Sunset**: {local(results['sunset'])}")
+        st.markdown(f"- 🌤️ **Civil Twilight**: {local(results['civil_twilight_begin'])} → {local(results['civil_twilight_end'])}")
+        st.markdown(f"- 🌊 **Nautical Twilight**: {local(results['nautical_twilight_begin'])} → {local(results['nautical_twilight_end'])}")
+        st.markdown(f"- 🌌 **Astronomical Twilight**: {local(results['astronomical_twilight_begin'])} → {local(results['astronomical_twilight_end'])}")
+    except Exception as e:
+        st.warning("Could not load twilight times.")
 
-    st.markdown(f"- 🌅 **Sunrise**: {local(results['sunrise'])}")
-    st.markdown(f"- 🌇 **Sunset**: {local(results['sunset'])}")
-    st.markdown(f"- 🌤️ **Civil Twilight**: {local(results['civil_twilight_begin'])} → {local(results['civil_twilight_end'])}")
-    st.markdown(f"- 🌊 **Nautical Twilight**: {local(results['nautical_twilight_begin'])} → {local(results['nautical_twilight_end'])}")
-    st.markdown(f"- 🌌 **Astronomical Twilight**: {local(results['astronomical_twilight_begin'])} → {local(results['astronomical_twilight_end'])}")
-except Exception as e:
-    st.warning("Could not load twilight times.")
 
 
 # === Column 3: Uber Demand Forecast ===
