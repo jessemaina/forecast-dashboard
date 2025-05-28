@@ -10,6 +10,11 @@ import io
 import contextlib
 import requests
 
+# === Get Data Once ===
+data = fetch_weather()
+import pytz
+perth_tz = pytz.timezone("Australia/Perth")
+now = datetime.now(perth_tz)
 
 def fetch_sun_times(date: str):
     lat = -31.8931
@@ -68,12 +73,6 @@ if next_rain_time:
 else:
     st.markdown("**🌧️ Next Rain:** No rain on the horizon")
 
-
-# === Get Data Once ===
-data = fetch_weather()
-import pytz
-perth_tz = pytz.timezone("Australia/Perth")
-now = datetime.now(perth_tz)
 
 
 # === Outfit Renderer ===
