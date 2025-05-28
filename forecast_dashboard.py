@@ -132,9 +132,6 @@ with col1:
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
         day_label = date_obj.strftime("%A")
 
-        sunrise = data["daily"]["sunrise"][i][-5:]
-        sunset = data["daily"]["sunset"][i][-5:]
-
         t_max = round(data["daily"]["temperature_2m_max"][i])
         t_min = round(data["daily"]["temperature_2m_min"][i])
         app_max = round(data["daily"]["apparent_temperature_max"][i])
