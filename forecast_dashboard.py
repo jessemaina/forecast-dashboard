@@ -126,7 +126,7 @@ with col1:
         if count >= max_forecasts:
             break
 
-       st.subheader("📅 7-Day Forecast")
+    st.subheader("📅 7-Day Forecast")
     for i in range(7):
         date_str = data["daily"]["time"][i]
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
@@ -157,6 +157,7 @@ with col1:
         st.markdown(f"- 🌡️ **Max**: {t_max}° (Feels {app_max}°) | **Min**: {t_min}° (Feels {app_min}°)")
         st.markdown(f"- 🌧️ **Rain**: {rain} mm")
         st.markdown("")
+
 
 
 # === Column 2: Clothesline Forecast ===
