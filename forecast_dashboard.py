@@ -3,6 +3,18 @@ from datetime import datetime, timedelta
 import io
 import contextlib
 
+import pytz
+import requests
+
+def fetch_sun_times(date: str):
+    lat = -31.8931
+    lon = 115.952
+    url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date={date}&formatted=0"
+    res = requests.get(url)
+    res.raise_for_status()
+    return res.json()["results"]
+    
+
 # === Import your logic ===
 from what_to_wear import (
     fetch_weather,
@@ -151,6 +163,27 @@ with col2:
     with contextlib.redirect_stdout(buf):
         check_washing_days(data)
     st.text(buf.getvalue())
+
+from datetime import timezone
+import pytz
+
+st.subheader("🌄 Twilight Times (Today)")
+
+try:
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    results = fetch_sun_times(today_str)
+    perth_tz = pytz.timezone("Australia/Perth")
+
+    def local(t): return datetime.fromisoformat(t).astimezone(perth_tz).strftime("%H:%M")
+
+    st.markdown(f"- 🌅 **Sunrise**: {local(results['sunrise'])}")
+    st.markdown(f"- 🌇 **Sunset**: {local(results['sunset'])}")
+    st.markdown(f"- 🌤️ **Civil Twilight**: {local(results['civil_twilight_begin'])} → {local(results['civil_twilight_end'])}")
+    st.markdown(f"- 🌊 **Nautical Twilight**: {local(results['nautical_twilight_begin'])} → {local(results['nautical_twilight_end'])}")
+    st.markdown(f"- 🌌 **Astronomical Twilight**: {local(results['astronomical_twilight_begin'])} → {local(results['astronomical_twilight_end'])}")
+except Exception as e:
+    st.warning("Could not load twilight times.")
+
 
 # === Column 3: Uber Demand Forecast ===
 with col3:
