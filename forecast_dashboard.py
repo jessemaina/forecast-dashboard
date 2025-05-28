@@ -30,7 +30,7 @@ st.set_page_config(page_title="Weather Dashboard", layout="wide")
 
 # === Header ===
 st.title("🌦️ Forecast")
-st.markdown(f"**Date:** {datetime.now().strftime('%A, %B %d, %Y')}")
+st.markdown(f"**Date:** {now.strftime('%A, %B %d, %Y')}")
 st.markdown("---")
 
 # === Get Data Once ===
