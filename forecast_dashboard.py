@@ -1,31 +1,15 @@
 import streamlit as st
 from datetime import datetime, timedelta
-import pytz  # make sure this is here
-
-# Set timezone
-perth_tz = pytz.timezone("Australia/Perth")
-now = datetime.now(perth_tz)
-
+import pytz
 import io
 import contextlib
 import requests
 
-# === Get Data Once ===
-data = fetch_weather()
-import pytz
+# === Timezone Setup ===
 perth_tz = pytz.timezone("Australia/Perth")
 now = datetime.now(perth_tz)
 
-def fetch_sun_times(date: str):
-    lat = -31.8931
-    lon = 115.952
-    url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date={date}&formatted=0"
-    res = requests.get(url)
-    res.raise_for_status()
-    return res.json()["results"]
-    
-
-# === Import your logic ===
+# === Weather & Forecast Logic ===
 from what_to_wear import (
     fetch_weather,
     outfit_logic,
@@ -35,29 +19,28 @@ from what_to_wear import (
 )
 from uber_demand_forecast import generate_forecast
 
-# === Streamlit Page Config ===
+# === Page Config ===
 st.set_page_config(page_title="Weather Dashboard", layout="wide")
 
 # === Header ===
 st.title("🌦️ Forecast")
-from dateutil import parser
-
-# Display today's date
 st.markdown(f"**Date:** {now.strftime('%A, %B %d, %Y')}")
 
-# Is it raining now?
+# === Fetch Weather Data ===
+data = fetch_weather()
+
+# === Raining Now? + Next Rain ===
 current_idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
 raining_now = False
 if current_idx is not None:
     rain_now = data["hourly"]["rain"][current_idx]
     showers_now = data["hourly"]["showers"][current_idx]
     raining_now = (rain_now > 0.1) or (showers_now > 0.1)
-
     st.markdown(f"**🌧️ Raining Now?** {'Yes' if raining_now else 'No'}")
 
-# Find next rain
+# === Next Rain Time ===
 next_rain_time = None
-for i, (t, rain, shower) in enumerate(zip(data["hourly"]["time"], data["hourly"]["rain"], data["hourly"]["showers"])):
+for t, rain, shower in zip(data["hourly"]["time"], data["hourly"]["rain"], data["hourly"]["showers"]):
     dt = datetime.strptime(t, "%Y-%m-%dT%H:%M").replace(tzinfo=pytz.utc).astimezone(perth_tz)
     if dt > now and (rain > 0.1 or shower > 0.1):
         next_rain_time = dt
@@ -72,6 +55,51 @@ if next_rain_time:
         st.markdown(f"**🌧️ Next Rain:** {next_rain_time.strftime('%A at %-I:%M %p')}")
 else:
     st.markdown("**🌧️ Next Rain:** No rain on the horizon")
+
+st.markdown("---")
+
+# === Outfit Renderer ===
+def render_outfit_line(label, entry):
+    outfit = outfit_logic(entry)
+    temp = round(entry["apparent_temp"])
+    rain = entry["rain"]
+    showers = entry["showers"]
+
+    emojis = ""
+    if temp < 7:
+        emojis += "❄️❄️❄️"
+    elif temp < 12:
+        emojis += "❄️❄️"
+    elif temp < 17:
+        emojis += "❄️"
+    if temp > 32:
+        emojis += "☀️☀️☀️"
+    elif temp > 23:
+        emojis += "☀️☀️"
+    elif temp > 18:
+        emojis += "☀️"
+    if rain > 0.3 or showers > 0.3:
+        emojis += " 🌧️"
+
+    items = outfit["Top"].split(", ") + outfit["Bottom"].split(", ") + outfit["Extras"].split(", ")
+    cleaned = [item.strip().capitalize() for item in items if item.strip().lower() != "none"]
+
+    outerwear = ["jacket", "hoodie", "jumper"]
+    has_outerwear = any(any(k in item.lower() for k in outerwear) for item in cleaned)
+
+    final = []
+    for item in cleaned:
+        if item.lower() == "t-shirt" and has_outerwear:
+            continue
+        if "thermal" in item.lower() and "Thermals" not in final:
+            final.append("Thermals")
+        elif "thermal" not in item.lower():
+            final.append(item)
+
+    st.markdown(f"**⏰ {label} {emojis} {temp}°**")
+    st.markdown(", ".join(final) + ".")
+    st.markdown("")
+
 
 
 
