@@ -21,9 +21,6 @@ def get_hour_index(data, dt):
     closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - target))
     return closest_idx if abs(times[closest_idx] - target) <= timedelta(hours=1) else None
 
-
-
-
 def build_entry(data, hour_dt):
     idx = get_hour_index(data, hour_dt)
     if idx is None:
@@ -134,19 +131,25 @@ def main():
     now = datetime.now()
 
     # RIGHT NOW
-    current_idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
-    if current_idx is not None:
-        current_entry = {
-            "apparent_temp": data["hourly"]["apparent_temperature"][current_idx],
-            "humidity": data["hourly"]["relative_humidity_2m"][current_idx],
-            "rain": data["hourly"]["rain"][current_idx],
-            "showers": data["hourly"]["showers"][current_idx],
-            "precip": data["hourly"]["precipitation"][current_idx],
-            "wind": data["hourly"]["wind_speed_10m"][current_idx],
-            "cloud": data["hourly"]["cloud_cover"][current_idx],
-            "is_day": bool(data["hourly"]["is_day"][current_idx]),
-        }
-        display_outfit("Right Now", current_entry)
+rounded_now = now.replace(minute=0, second=0, microsecond=0)
+idx = get_hour_index(data, rounded_now)
+if idx is not None:
+    entry = {
+        "apparent_temp": data["hourly"]["apparent_temperature"][idx],
+        "humidity": data["hourly"]["relative_humidity_2m"][idx],
+        "rain": data["hourly"]["rain"][idx],
+        "showers": data["hourly"]["showers"][idx],
+        "precip": data["hourly"]["precipitation"][idx],
+        "wind": data["hourly"]["wind_speed_10m"][idx],
+        "cloud": data["hourly"]["cloud_cover"][idx],
+        "is_day": bool(data["hourly"]["is_day"][idx]),
+    }
+    timestamp_used = data["hourly"]["time"][idx]
+    st.caption(f"Right Now is based on data for: {timestamp_used}")
+    render_outfit_line("Right Now", entry)
+else:
+    st.caption("⚠️ No data available for current time")
+
 
     # TODAY AND TOMORROW
     for offset in [0, 1]:
