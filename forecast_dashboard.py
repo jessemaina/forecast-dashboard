@@ -5,6 +5,14 @@ import io
 import contextlib
 import requests
 
+def fetch_sun_times(date: str):
+    lat = -31.8931
+    lon = 115.952
+    url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date={date}&formatted=0"
+    res = requests.get(url)
+    res.raise_for_status()
+    return res.json()["results"]
+
 # === Timezone Setup ===
 perth_tz = pytz.timezone("Australia/Perth")
 now = datetime.now(perth_tz)
