@@ -13,24 +13,10 @@ def fetch_weather():
     return res.json()
 
 def get_hour_index(data, dt):
-    target = dt.replace(minute=0, second=0, microsecond=0)
-    print(f"🔍 Looking for closest match to: {target}")
-
-    times = [datetime.strptime(t, "%Y-%m-%dT%H:%M") for t in data["hourly"]["time"]]
-
-    # For debugging: print first 5 timestamps
-    print("🕒 Sample available times:")
-    for t in times[:5]:
-        print(" →", t)
-
-    closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - target))
-    closest_time = times[closest_idx]
-    diff = abs(closest_time - target)
-
-    print(f"🎯 Closest time found: {closest_time} (diff = {diff})")
-
-    return closest_idx if diff <= timedelta(hours=1) else None
-
+    target_str = dt.strftime("%Y-%m-%dT%H:00")
+    if target_str in data["hourly"]["time"]:
+        return data["hourly"]["time"].index(target_str)
+    return None
 
 def build_entry(data, hour_dt):
     idx = get_hour_index(data, hour_dt)
