@@ -29,7 +29,7 @@ from uber_demand_forecast import generate_forecast
 st.set_page_config(page_title="Weather Dashboard", layout="wide")
 
 # === Header ===
-st.title("🌦️ Your Daily Forecast Assistant")
+st.title("🌦️ Forecast")
 st.markdown(f"**Date:** {datetime.now().strftime('%A, %B %d, %Y')}")
 st.markdown("---")
 
