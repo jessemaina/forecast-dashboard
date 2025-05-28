@@ -35,7 +35,10 @@ st.markdown("---")
 
 # === Get Data Once ===
 data = fetch_weather()
-now = datetime.now()
+import pytz
+perth_tz = pytz.timezone("Australia/Perth")
+now = datetime.now(perth_tz)
+
 
 # === Outfit Renderer ===
 def render_outfit_line(label, entry):
