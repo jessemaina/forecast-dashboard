@@ -15,10 +15,12 @@ def fetch_weather():
 from datetime import datetime, timedelta
 
 def get_hour_index(data, dt):
+    print("🔍 Using updated get_hour_index")
     target = dt.replace(minute=0, second=0, microsecond=0)
     times = [datetime.strptime(t, "%Y-%m-%dT%H:%M") for t in data["hourly"]["time"]]
     closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - target))
     return closest_idx if abs(times[closest_idx] - target) <= timedelta(hours=1) else None
+
 
 
 
