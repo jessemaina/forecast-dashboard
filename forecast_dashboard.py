@@ -23,7 +23,8 @@ st.markdown("---")
 
 # === Get Data Once ===
 data = fetch_weather()
-now = datetime.now()
+from datetime import datetime, timezone
+now = datetime.now(timezone.utc)
 
 # === Smart, Clean Outfit Renderer ===
 def render_outfit_line(label, entry):
