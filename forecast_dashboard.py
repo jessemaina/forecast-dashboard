@@ -114,6 +114,50 @@ with col1:
         if count >= max_forecasts:
             break
 
+    # === 9-Day Weather Summary ===
+    st.subheader("📅 9-Day Forecast")
+
+    for i in range(9):
+        date_str = data["daily"]["time"][i]
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        day_label = date_obj.strftime("%A")
+        if i < 3:
+            day_label += " (past)"
+        elif i == 3:
+            day_label += " (today)"
+
+        sunrise = data["daily"]["sunrise"][i][-5:]
+        sunset = data["daily"]["sunset"][i][-5:]
+
+        t_max = round(data["daily"]["temperature_2m_max"][i])
+        t_min = round(data["daily"]["temperature_2m_min"][i])
+        app_max = round(data["daily"]["apparent_temperature_max"][i])
+        app_min = round(data["daily"]["apparent_temperature_min"][i])
+        rain = round(data["daily"]["precipitation_sum"][i], 1)
+
+        # Determine weather emoji
+        if rain > 5:
+            emoji = "🌧️"
+        elif rain > 1:
+            emoji = "🌦️"
+        elif t_max > 32:
+            emoji = "🔥"
+        elif t_max > 23:
+            emoji = "☀️"
+        elif t_max > 17:
+            emoji = "🌤️"
+        elif t_max < 13:
+            emoji = "❄️"
+        else:
+            emoji = "🌥️"
+
+        st.markdown(f"**{emoji} {day_label}**")
+        st.markdown(f"- 🌅 **Sunrise**: {sunrise} | 🌇 **Sunset**: {sunset}")
+        st.markdown(f"- 🌡️ **Max**: {t_max}° (Feels {app_max}°) | **Min**: {t_min}° (Feels {app_min}°)")
+        st.markdown(f"- 🌧️ **Rain**: {rain} mm")
+        st.markdown("")
+
+
 # === Column 2: Clothesline Forecast ===
 with col2:
     st.subheader("🧺 Clothesline Forecast")
