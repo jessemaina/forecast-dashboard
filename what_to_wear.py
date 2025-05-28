@@ -131,7 +131,6 @@ def main():
     now = datetime.now()
 
     # RIGHT NOW
-rounded_now = now.replace(minute=0, second=0, microsecond=0)
 idx = get_hour_index(data, rounded_now)
 if idx is not None:
     entry = {
