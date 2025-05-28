@@ -99,8 +99,6 @@ with col1:
             "is_day": bool(data["hourly"]["is_day"][idx]),
         }
         render_outfit_line("Right Now", entry)
-    else:
-        st.caption("⚠️ No data available for current time")
 
     TIME_LABELS = {5: "5am Morning Walk", 12: "12pm Lunch", 21: "9pm Night Time"}
     count = 0
