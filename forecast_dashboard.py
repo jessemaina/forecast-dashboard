@@ -198,25 +198,42 @@ with col1:
         app_min = round(data["daily"]["apparent_temperature_min"][i])
         rain = round(data["daily"]["precipitation_sum"][i], 1)
 
+        # Weather emoji
         if rain > 5:
-            emoji = "🌧️"
+            weather_emoji = "🌧️"
         elif rain > 1:
-            emoji = "🌦️"
+            weather_emoji = "🌦️"
         elif t_max > 32:
-            emoji = "🔥"
+            weather_emoji = "🔥"
         elif t_max > 23:
-            emoji = "☀️"
+            weather_emoji = "☀️"
         elif t_max > 17:
-            emoji = "🌤️"
+            weather_emoji = "🌤️"
         elif t_max < 13:
-            emoji = "❄️"
+            weather_emoji = "❄️"
         else:
-            emoji = "🌥️"
+            weather_emoji = "🌥️"
 
-        st.markdown(f"**{emoji} {day_label}**")
+        # Temperature feeling emojis
+        temp_emojis = ""
+        if app_max < 7:
+            temp_emojis += "❄️❄️❄️"
+        elif app_max < 12:
+            temp_emojis += "❄️❄️"
+        elif app_max < 17:
+            temp_emojis += "❄️"
+        if app_max > 32:
+            temp_emojis += "☀️☀️☀️"
+        elif app_max > 23:
+            temp_emojis += "☀️☀️"
+        elif app_max > 18:
+            temp_emojis += "☀️"
+
+        st.markdown(f"**{weather_emoji} {day_label} {temp_emojis}**")
         st.markdown(f"- 🌡️ **Max**: {t_max}° (Feels {app_max}°) | **Min**: {t_min}° (Feels {app_min}°)")
         st.markdown(f"- 🌧️ **Rain**: {rain} mm")
         st.markdown("")
+
 
 
 
