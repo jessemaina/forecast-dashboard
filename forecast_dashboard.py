@@ -256,9 +256,9 @@ with col2:
 
         st.markdown(f"- 🌅 **Sunrise**: {local(results['sunrise'])}")
         st.markdown(f"- 🌇 **Sunset**: {local(results['sunset'])}")
-        st.markdown(f"- 🌤️ **Civil Twilight**: {local(results['civil_twilight_begin'])} → {local(results['civil_twilight_end'])}")
-        st.markdown(f"- 🌊 **Nautical Twilight**: {local(results['nautical_twilight_begin'])} → {local(results['nautical_twilight_end'])}")
-        st.markdown(f"- 🌌 **Astronomical Twilight**: {local(results['astronomical_twilight_begin'])} → {local(results['astronomical_twilight_end'])}")
+        st.markdown(f"- 🌤️ **Civil Twilight**: {local(results['civil_twilight_begin'])} and {local(results['civil_twilight_end'])}")
+        st.markdown(f"- 🌊 **Nautical Twilight**: {local(results['nautical_twilight_begin'])} and {local(results['nautical_twilight_end'])}")
+        st.markdown(f"- 🌌 **Astronomical Twilight**: {local(results['astronomical_twilight_begin'])} and {local(results['astronomical_twilight_end'])}")
     except Exception as e:
         st.warning("Could not load twilight times.")
 
