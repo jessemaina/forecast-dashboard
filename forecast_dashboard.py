@@ -175,22 +175,16 @@ with col1:
         render_outfit_line("Right Now", entry)
 
     TIME_LABELS = {5: "5am Morning Walk", 12: "12pm Lunch", 21: "9pm Night Time"}
-    count = 0
-    max_forecasts = 6
 
-    for day_offset in range(1, 5):
+    for day_offset in [0, 1]:  # today and tomorrow
+        label_prefix = "Today" if day_offset == 0 else "Tomorrow"
         for hour in [5, 12, 21]:
             dt = now.replace(hour=hour, minute=0, second=0, microsecond=0) + timedelta(days=day_offset)
-            if dt > now:
-                entry = build_entry(data, dt)
-                if "error" not in entry:
-                    label = f"{TIME_LABELS[hour]} ({dt.strftime('%A')})"
-                    render_outfit_line(label, entry)
-                    count += 1
-                if count >= max_forecasts:
-                    break
-        if count >= max_forecasts:
-            break
+            entry = build_entry(data, dt)
+            if "error" not in entry:
+                label = f"{TIME_LABELS[hour]} ({label_prefix})"
+                render_outfit_line(label, entry)
+
 
     st.subheader("📅 7-Day Forecast")
     for i in range(7):
