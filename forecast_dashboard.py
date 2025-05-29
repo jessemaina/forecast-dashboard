@@ -214,21 +214,21 @@ with col1:
         else:
             weather_emoji = "🌥️"
 
-        # Temperature rating emoji
-        if app_max < 7:
+        if app_max <= 7:
             temp_rating = "❄️❄️❄️"
-        elif app_max < 12:
+        elif app_max <= 12:
             temp_rating = "❄️❄️"
-        elif app_max < 17:
+        elif app_max <= 17:
             temp_rating = "❄️"
-        elif app_max > 32:
+        elif app_max >= 33:
             temp_rating = "☀️☀️☀️"
-        elif app_max > 23:
+        elif app_max >= 24:
             temp_rating = "☀️☀️"
-        elif app_max > 18:
+        elif app_max >= 19:
             temp_rating = "☀️"
         else:
             temp_rating = ""
+
 
         st.markdown(f"**{weather_emoji} {day_label}** - Temperature rating: {temp_rating}")
         st.markdown(f"- 🌡️ **Max**: {t_max}° (Feels {app_max}°) | **Min**: {t_min}° (Feels {app_min}°)")
