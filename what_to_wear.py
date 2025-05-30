@@ -78,11 +78,11 @@ def outfit_logic(entry):
             "Extras": "None"
         }
 
-    # Adjust for night chill
+    # === Adjust for night chill ===
     if not is_day:
         temp -= 2
 
-    # === TEMPERATURE-BASED ===
+    # === TEMPERATURE-BASED LAYERS ===
     if temp < 17:
         bottom.append("Thermals")
         bottom.append("Trackies")
@@ -106,21 +106,56 @@ def outfit_logic(entry):
     else:
         top.append("T-shirt or Singlet")
 
-    # === WEATHER EXTRAS ===
-    if rain > 0.3 or showers > 0.3:
-        extras.append("Rain jacket")
-    elif wind > 25:
-        extras.append("Windbreaker")
+    # === WEATHER MODIFIERS ===
 
+    # Wet chill: drizzle or more + <20°C
+    if temp < 20 and (rain > 0.2 or showers > 0.2):
+        if wind > 10:
+            if "Rain jacket" not in extras:
+                extras.append("Rain jacket")
+        else:
+            extras.append("Light rain shell")
+
+    # Wind chill logic
+    if wind > 25:
+        if 16 < temp < 22:
+            top = ["Windbreaker"]
+            bottom = ["Trackies"]
+        else:
+            extras.append("Windbreaker")
+
+    # Humid warmth adjustment
+    if humidity > 85 and temp > 18 and rain == 0 and showers == 0:
+        if "Jumper or hoody" in top:
+            top.remove("Jumper or hoody")
+        extras.append("Breathable layers")
+
+    # Clammy cold: humid + windy + cool
+    if humidity > 90 and wind > 20 and temp < 21:
+        if "T-shirt" in top:
+            top.remove("T-shirt")
+        if "Thermals" not in top:
+            top.insert(0, "Thermals")
+        if "Jumper or hoody" not in top:
+            top.append("Jumper or hoody")
+
+    # Cold wind accessories
     if temp < 10 or (temp < 13 and wind > 30):
         extras.append("Beanie")
         extras.append("Gloves")
+
+    # Fallbacks
+    if not top:
+        top.append("T-shirt")
+    if not bottom:
+        bottom.append("Trackies")
 
     return {
         "Top": ", ".join(top),
         "Bottom": ", ".join(bottom),
         "Extras": ", ".join(extras) if extras else "None"
     }
+
 
 # === WEATHER DESCRIPTION ===
 def describe_weather(entry):
