@@ -131,49 +131,13 @@ def describe_weather(entry):
     showers = entry["showers"]
     cloud = entry["cloud"]
 
-    parts = []
+    total_precip = rain + showers
 
-    if temp < 10:
-        parts.append("very cold")
-    elif temp < 14:
-        parts.append("cold")
-    elif temp < 18:
-        parts.append("cool")
-    elif temp < 25:
-        parts.append("mild")
-    elif temp < 33:
-        parts.append("warm")
-    else:
-        parts.append("hot")
+    return (
+        f"Conditions: 🌡️ {temp:.1f}°C  💧 {humidity}% humidity  💨 {wind:.1f}km/h wind  "
+        f"🌧️ {total_precip:.1f}mm precip  ☁️ {cloud}% cloud"
+    )
 
-    if rain + showers > 2:
-        parts.append("moderate rain")
-    elif rain + showers > 0.5:
-        parts.append("light showers")
-    elif rain + showers > 0:
-        parts.append("drizzle")
-    else:
-        parts.append("dry")
-
-    if wind > 35:
-        parts.append("strong winds")
-    elif wind > 20:
-        parts.append("breezy")
-    elif wind > 10:
-        parts.append("light breeze")
-    else:
-        parts.append("calm")
-
-    if cloud > 90:
-        parts.append("very overcast")
-    elif cloud > 70:
-        parts.append("overcast")
-    elif cloud > 40:
-        parts.append("partly cloudy")
-    else:
-        parts.append("mostly clear")
-
-    return f"Conditions: {temp:.1f}°C apparent, {humidity}% humidity, {wind:.1f}km/h wind, {rain + showers:.1f}mm precip, {cloud}% cloud ({', '.join(parts)})."
 
 # === DISPLAY OUTFIT ===
 def display_outfit(time_label, entry):
