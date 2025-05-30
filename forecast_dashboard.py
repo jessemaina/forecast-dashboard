@@ -149,9 +149,11 @@ def render_outfit_line(label, entry):
         elif "thermal" not in item.lower():
             final.append(item)
 
-    st.markdown(f"**⏰ {label} {emojis} {temp}°**")
-    st.markdown(", ".join(final) + ".")
-    st.markdown("")
+st.markdown(f"**⏰ {label} {emojis} {temp}°**")
+st.markdown(", ".join(final) + ".")
+st.markdown(describe_weather(entry))
+st.markdown("")
+
 
 # === Layout Columns ===
 col1, col2, col3 = st.columns(3)
