@@ -23,7 +23,8 @@ from what_to_wear import (
     outfit_logic,
     get_hour_index,
     build_entry,
-    check_washing_days
+    check_washing_days,
+    describe_weather
 )
 from uber_demand_forecast import generate_forecast
 
@@ -67,6 +68,8 @@ else:
 st.markdown("---")
 
 # === Outfit Renderer ===
+from what_to_wear import describe_weather  # Make sure this is in your import block
+
 def render_outfit_line(label, entry):
     outfit = outfit_logic(entry)
     temp = round(entry["apparent_temp"])
@@ -106,53 +109,8 @@ def render_outfit_line(label, entry):
 
     st.markdown(f"**⏰ {label} {emojis} {temp}°**")
     st.markdown(", ".join(final) + ".")
+    st.markdown(describe_weather(entry))
     st.markdown("")
-
-
-
-
-# === Outfit Renderer ===
-def render_outfit_line(label, entry):
-    outfit = outfit_logic(entry)
-    temp = round(entry["apparent_temp"])
-    rain = entry["rain"]
-    showers = entry["showers"]
-
-    emojis = ""
-    if temp < 7:
-        emojis += "❄️❄️❄️"
-    elif temp < 12:
-        emojis += "❄️❄️"
-    elif temp < 17:
-        emojis += "❄️"
-    if temp > 32:
-        emojis += "☀️☀️☀️"
-    elif temp > 23:
-        emojis += "☀️☀️"
-    elif temp > 18:
-        emojis += "☀️"
-    if rain > 0.3 or showers > 0.3:
-        emojis += " 🌧️"
-
-    items = outfit["Top"].split(", ") + outfit["Bottom"].split(", ") + outfit["Extras"].split(", ")
-    cleaned = [item.strip().capitalize() for item in items if item.strip().lower() != "none"]
-
-    outerwear = ["jacket", "hoodie", "jumper"]
-    has_outerwear = any(any(k in item.lower() for k in outerwear) for item in cleaned)
-
-    final = []
-    for item in cleaned:
-        if item.lower() == "t-shirt" and has_outerwear:
-            continue
-        if "thermal" in item.lower() and "Thermals" not in final:
-            final.append("Thermals")
-        elif "thermal" not in item.lower():
-            final.append(item)
-
-st.markdown(f"**⏰ {label} {emojis} {temp}°**")
-st.markdown(", ".join(final) + ".")
-st.markdown(describe_weather(entry))
-st.markdown("")
 
 
 # === Layout Columns ===
