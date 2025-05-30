@@ -2,7 +2,14 @@ import requests
 from datetime import datetime, timedelta
 
 # === CONFIG ===
-API_URL = "https://api.open-meteo.com/v1/forecast?latitude=-31.893106844411854&longitude=115.952&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_sum&hourly=temperature_2m,rain,precipitation,apparent_temperature,relative_humidity_2m,dew_point_2m,showers,cloud_cover,wind_speed_10m,is_day&current=temperature_2m,is_day,rain,showers,precipitation&timezone=auto"
+API_URL = (
+    "https://api.open-meteo.com/v1/forecast?"
+    "latitude=-31.893106844411854&longitude=115.952&daily=sunrise,sunset,temperature_2m_max,"
+    "temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_sum&"
+    "hourly=temperature_2m,rain,precipitation,apparent_temperature,relative_humidity_2m,"
+    "dew_point_2m,showers,cloud_cover,wind_speed_10m,is_day&current=temperature_2m,"
+    "is_day,rain,showers,precipitation&timezone=auto"
+)
 
 KEY_HOURS = [5, 12, 21]
 
@@ -14,9 +21,7 @@ def fetch_weather():
 
 def get_hour_index(data, dt):
     target_str = dt.strftime("%Y-%m-%dT%H:00")
-    if target_str in data["hourly"]["time"]:
-        return data["hourly"]["time"].index(target_str)
-    return None
+    return data["hourly"]["time"].index(target_str) if target_str in data["hourly"]["time"] else None
 
 def build_entry(data, hour_dt):
     idx = get_hour_index(data, hour_dt)
@@ -46,10 +51,10 @@ def outfit_logic(entry):
     top = []
     bottom = []
     extras = []
-    
+
     # === OVERRIDES ===
 
-    # 1. Extreme cold, wet, windy, dark
+    # 1. Miserable cold, wet, windy night
     if not is_day and temp < 13 and (rain > 0.3 or showers > 0.3) and wind > 25:
         return {
             "Top": "Thermals, Thick jumper or hoody, Rain jacket or Windbreaker",
@@ -65,7 +70,7 @@ def outfit_logic(entry):
             "Extras": "Sunglasses, Cold water bottle, Apply sunscreen"
         }
 
-    # 3. Cool & wet night (your common use case)
+    # 3. Damp, cool night
     if not is_day and temp <= 21 and (rain > 0.2 or showers > 0.2 or cloud > 70):
         return {
             "Top": "Thermals, Jumper or hoody, Rain jacket",
@@ -73,13 +78,11 @@ def outfit_logic(entry):
             "Extras": "None"
         }
 
-    # Apply chill factor for night
+    # Adjust for night chill
     if not is_day:
         temp -= 2
 
-    # === BASED ON TEMP RANGE ===
-
-    # Bottoms
+    # === TEMPERATURE-BASED ===
     if temp < 17:
         bottom.append("Thermals")
         bottom.append("Trackies")
@@ -88,7 +91,6 @@ def outfit_logic(entry):
     else:
         bottom.append("Shorts")
 
-    # Tops
     if temp < 13:
         top.append("Thermals")
         top.append("Thick jumper or hoody")
@@ -104,8 +106,7 @@ def outfit_logic(entry):
     else:
         top.append("T-shirt or Singlet")
 
-    # === WEATHER-BASED EXTRAS ===
-
+    # === WEATHER EXTRAS ===
     if rain > 0.3 or showers > 0.3:
         extras.append("Rain jacket")
     elif wind > 25:
@@ -121,15 +122,8 @@ def outfit_logic(entry):
         "Extras": ", ".join(extras) if extras else "None"
     }
 
-def display_outfit(time_label, entry):
-    print(f"\nTime: {time_label}")
-    outfit = outfit_logic(entry)
-    for key, val in outfit.items():
-        print(f"→ {key}: {val}")
-
+# === WEATHER DESCRIPTION ===
 def describe_weather(entry):
-    parts = []
-
     temp = entry["apparent_temp"]
     humidity = entry["humidity"]
     wind = entry["wind"]
@@ -137,7 +131,8 @@ def describe_weather(entry):
     showers = entry["showers"]
     cloud = entry["cloud"]
 
-    # Temperature
+    parts = []
+
     if temp < 10:
         parts.append("very cold")
     elif temp < 14:
@@ -151,17 +146,15 @@ def describe_weather(entry):
     else:
         parts.append("hot")
 
-    # Rain / showers
-    if rain > 2 or showers > 2:
+    if rain + showers > 2:
         parts.append("moderate rain")
-    elif rain > 0.5 or showers > 0.5:
+    elif rain + showers > 0.5:
         parts.append("light showers")
-    elif rain > 0 or showers > 0:
+    elif rain + showers > 0:
         parts.append("drizzle")
     else:
         parts.append("dry")
 
-    # Wind
     if wind > 35:
         parts.append("strong winds")
     elif wind > 20:
@@ -171,7 +164,6 @@ def describe_weather(entry):
     else:
         parts.append("calm")
 
-    # Cloud
     if cloud > 90:
         parts.append("very overcast")
     elif cloud > 70:
@@ -183,6 +175,7 @@ def describe_weather(entry):
 
     return f"Conditions: {temp:.1f}°C apparent, {humidity}% humidity, {wind:.1f}km/h wind, {rain + showers:.1f}mm precip, {cloud}% cloud ({', '.join(parts)})."
 
+# === DISPLAY OUTFIT ===
 def display_outfit(time_label, entry):
     print(f"\n⏰ {time_label}")
     outfit = outfit_logic(entry)
@@ -190,19 +183,13 @@ def display_outfit(time_label, entry):
         print(f"→ {key}: {val}")
     print(describe_weather(entry))
 
-
 # === CLOTHESLINE FORECAST ===
 def check_washing_days(data):
     print("\nClothesline Forecast (Next 7 Days):")
-    daily = data["daily"]
     for i in range(7):
-        date_str = daily["time"][i]
-        rain = daily["precipitation_sum"][i]
-
-        # Convert string to datetime, get weekday name
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-        weekday = date_obj.strftime("%A")
-
+        date_str = data["daily"]["time"][i]
+        rain = data["daily"]["precipitation_sum"][i]
+        weekday = datetime.strptime(date_str, "%Y-%m-%d").strftime("%A")
         if rain == 0:
             print(f"👕 {weekday} ({date_str}): Good day to hang washing")
         else:
@@ -213,33 +200,22 @@ def main():
     data = fetch_weather()
     now = datetime.now()
 
-    # RIGHT NOW
+    # Right now
     current_idx = get_hour_index(data, now.replace(minute=0, second=0, microsecond=0))
     if current_idx is not None:
-        current_entry = {
-            "apparent_temp": data["hourly"]["apparent_temperature"][current_idx],
-            "humidity": data["hourly"]["relative_humidity_2m"][current_idx],
-            "rain": data["hourly"]["rain"][current_idx],
-            "showers": data["hourly"]["showers"][current_idx],
-            "precip": data["hourly"]["precipitation"][current_idx],
-            "wind": data["hourly"]["wind_speed_10m"][current_idx],
-            "cloud": data["hourly"]["cloud_cover"][current_idx],
-            "is_day": bool(data["hourly"]["is_day"][current_idx]),
-        }
+        current_entry = build_entry(data, now.replace(minute=0, second=0, microsecond=0))
         display_outfit("Right Now", current_entry)
 
-    # TODAY AND TOMORROW
+    # Forecast for today and tomorrow
     for offset in [0, 1]:
         label = "Today" if offset == 0 else "Tomorrow"
-        for hour in [5, 12, 21]:
+        for hour in KEY_HOURS:
             dt = now.replace(hour=hour, minute=0, second=0, microsecond=0) + timedelta(days=offset)
             entry = build_entry(data, dt)
             if "error" not in entry:
                 display_outfit(f"{hour:02}:00 ({label})", entry)
 
-    # CLOTHESLINE FORECAST
     check_washing_days(data)
 
-# === RUN ===
 if __name__ == "__main__":
     main()
