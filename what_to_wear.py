@@ -134,7 +134,7 @@ def describe_weather(entry):
     total_precip = rain + showers
 
     return (
-        f"Conditions: 🌡️ {temp:.1f}°C  💧 {humidity}% humidity  💨 {wind:.1f}km/h wind  "
+        f"🌡️ {temp:.1f}°C  💧 {humidity}% humidity  💨 {wind:.1f}km/h wind  "
         f"🌧️ {total_precip:.1f}mm precip  ☁️ {cloud}% cloud"
     )
 
