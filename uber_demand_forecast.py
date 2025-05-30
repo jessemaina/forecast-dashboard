@@ -34,82 +34,85 @@ def generate_forecast(data):
         score = 0.0
         reasons = []
 
-        # 🌧️ Wet weather = people stay home
-        if hour_data["precip"] > 5.0:
+        # 🌧️ Rain boosts demand
+        if hour_data["precip"] > 4.0:
             score += 2.5
             reasons.append("heavy rain (+2.5)")
-        elif 1.0 < hour_data["precip"] <= 5.0:
+        elif 0.7 < hour_data["precip"] <= 4.0:
             score += 1.5
             reasons.append("moderate rain (+1.5)")
         elif hour_data["precip"] > 0.2:
             score += 1
             reasons.append("light rain (+1)")
 
-        # 💨 Wind amplifies cold or deters going out
-        if hour_data["wind"] > 35:
+        # 💨 Wind
+        if hour_data["wind"] > 30:
             score += 2
-            reasons.append("gale-force wind (+2)")
-        elif hour_data["wind"] > 20:
+            reasons.append("strong wind (+2)")
+        elif hour_data["wind"] > 18:
             score += 1
-            reasons.append("strong wind (+1)")
+            reasons.append("breezy night (+1)")
 
-        # ❄️ Cold snaps increase comfort food cravings
-        if hour_data["apparent_temp"] < 10:
+        # ❄️ Cold
+        if hour_data["apparent_temp"] < 9:
             score += 2
-            reasons.append("very cold apparent temp (+2)")
-        elif hour_data["apparent_temp"] < 15:
+            reasons.append("freezing apparent temp (+2)")
+        elif hour_data["apparent_temp"] < 14:
             score += 1
-            reasons.append("cold apparent temp (+1)")
+            reasons.append("chilly apparent temp (+1)")
 
-        # 🔥 Extreme heat = too hot to cook
-        if hour_data["temp"] > 40:
+        # 🔥 Heat
+        if hour_data["temp"] > 39:
             score += 2
-            reasons.append("oppressively hot (+2)")
-        elif hour_data["temp"] > 34:
+            reasons.append("extreme heat (+2)")
+        elif hour_data["temp"] > 33:
             score += 1.5
             reasons.append("very hot afternoon (+1.5)")
 
-        # 🌫️ Humidity makes people sluggish
-        if hour_data["humidity"] > 75 and hour_data["dew"] > 18:
+        # 🌫️ Humidity
+        if hour_data["humidity"] > 70 and hour_data["dew"] > 17:
             score += 1
-            reasons.append("humid and sticky (+1)")
+            reasons.append("sticky air (+1)")
 
-        # ☁️ Cloud cover adds to 'stay in' vibes
-        if hour_data["cloud"] > 70:
+        # ☁️ Cloud
+        if hour_data["cloud"] > 65:
+            score += 0.75
+            reasons.append("heavy cloud cover (+0.75)")
+        elif hour_data["cloud"] > 40:
             score += 0.5
-            reasons.append("heavy cloud cover (+0.5)")
+            reasons.append("overcast (+0.5)")
 
-        # 🗓️ Cultural & day-based factors
+        # 🗓️ Time-of-week bonuses
         if shift == "dinner":
             if weekday == 4:
                 score += 2
-                reasons.append("Friday dinner peak (+2)")
+                reasons.append("Friday dinner (+2)")
             elif weekday == 5:
                 score += 2
-                reasons.append("Saturday dinner peak (+2)")
+                reasons.append("Saturday dinner (+2)")
             elif weekday == 3:
-                score += 1
-                reasons.append("Thursday dinner (+1)")
+                score += 1.25
+                reasons.append("Thursday dinner (+1.25)")
 
         if shift == "late":
             if weekday == 5:
                 score += 1.5
-                reasons.append("Saturday late rush (+1.5)")
+                reasons.append("Saturday late crowd (+1.5)")
             elif weekday == 4:
-                score += 1
-                reasons.append("Friday late rush (+1)")
+                score += 1.25
+                reasons.append("Friday late rush (+1.25)")
             elif weekday == 1:
-                score += 0.5
-                reasons.append("Monday hangover craving (+0.5)")
+                score += 0.75
+                reasons.append("Monday cravings (+0.75)")
 
-        if shift == "morning" and hour_data["temp"] < 10 and hour_data["wind"] < 10:
-            score += 1.5
-            reasons.append("cold, calm morning cravings (+1.5)")
+        if shift == "morning" and hour_data["temp"] < 11 and hour_data["wind"] < 10:
+            score += 1.25
+            reasons.append("cold calm morning (+1.25)")
 
-        # ⛱️ Perfect weather = slight drop
-        if 19 <= hour_data["temp"] <= 26 and hour_data["cloud"] < 30 and hour_data["wind"] < 10 and hour_data["precip"] < 0.1:
-            score -= 1
-            reasons.append("pleasant outdoor weather (–1)")
+        # ⛱️ Pleasant weather penalty softened
+        if 20 <= hour_data["temp"] <= 27 and hour_data["cloud"] < 30 and hour_data["wind"] < 10 and hour_data["precip"] < 0.1:
+            score -= 0.5
+            reasons.append("pleasant weather (–0.5)")
 
         return score, reasons
 
@@ -120,9 +123,9 @@ def generate_forecast(data):
             score, reasons = assess_opportunity(day_offset, shift)
             if score >= 4:
                 label = "💸💸 High Opportunity"
-            elif score >= 2.5:
+            elif score >= 2:
                 label = "💸 Good Opportunity"
-            elif score >= 1:
+            elif score >= 0.75:
                 label = "🤍 Moderate Opportunity"
             else:
                 label = "💤 Low Opportunity"
