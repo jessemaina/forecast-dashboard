@@ -33,7 +33,6 @@ def build_entry(data, hour_dt):
         "is_day": bool(data["hourly"]["is_day"][idx]),
     }
 
-# === OUTFIT LOGIC ===
 def outfit_logic(entry):
     temp = entry["apparent_temp"]
     humidity = entry["humidity"]
@@ -46,93 +45,95 @@ def outfit_logic(entry):
     reasons = []
 
     # === OVERRIDES ===
+
+    # Miserable override: cold, wet, windy, dark
     if not is_day and wind > 25 and (rain > 0.3 or showers > 0.3) and temp < 20:
-        reasons.append("Nighttime + cold + windy + rain → Miserable override")
+        reasons.append("Miserable conditions (night + cold + wind + rain)")
         return {
-            "Top": "Thermal, Jumper, Waterproof jacket",
-            "Bottom": "Track pants",
-            "Extras": "Beanie, Gloves, Windbreaker, Rain jacket",
+            "Top": "Thermals, Jumper or Hoody, Rain jacket",
+            "Bottom": "Trackies",
+            "Extras": "Beanie, Gloves, Windbreaker",
             "Reasons": "; ".join(reasons)
         }
 
+    # Oppressively hot override
     if temp > 35 and humidity > 40:
-        reasons.append("Oppressively hot and humid → Heat override")
+        reasons.append("Oppressive heat + humidity")
         return {
-            "Top": "Light singlet",
+            "Top": "T-shirt or Singlet",
             "Bottom": "Shorts",
-            "Extras": "Sunglasses, Cold water bottle, Apply sunscreen",
+            "Extras": "Cold water bottle, Sunglasses, Sunscreen",
             "Reasons": "; ".join(reasons)
         }
 
+    # Daylight cold trap
     if is_day and 18 <= temp <= 23 and wind > 15 and cloud > 60:
-        reasons.append("Chilly daylight trap: overcast, windy → Needs coverage")
+        reasons.append("Daylight cold trap: wind + overcast + borderline temps")
         return {
-            "Top": "Long-sleeve or Hoodie",
-            "Bottom": "Jeans or Track pants",
-            "Extras": "Optional Windbreaker",
+            "Top": "Thermals, Jumper or Hoody",
+            "Bottom": "Trackies",
+            "Extras": "Windbreaker (optional)",
             "Reasons": "; ".join(reasons)
         }
 
-    # === NIGHT CORRECTION ===
+    # === ADJUST FOR NIGHT CHILL ===
     if not is_day:
         temp -= 2
-        reasons.append("Night-time temp adjustment (–2°C)")
+        reasons.append("Night-time adjustment (–2°C)")
 
+    # === BASED ON TEMP ===
     top = []
     bottom = []
     extras = []
 
-    # === THERMALS & LAYERS ===
+    # Base layers
     if temp < 13:
-        top.append("Thermal")
-        bottom.append("Thermal")
-        reasons.append("Very cold (<13°C) → Thermals")
+        top.append("Thermals")
+        bottom.append("Trackies")
+        reasons.append("Very cold (<13°C) → Thermals + Trackies")
+    elif temp < 17:
+        bottom.append("Trackies")
+        reasons.append("Cool (<17°C) → Trackies")
+    else:
+        bottom.append("Shorts" if temp >= 25 else "Trackies")
+        if temp >= 25:
+            reasons.append("Warm (≥25°C) → Shorts")
+        else:
+            reasons.append("Mild (<25°C) → Trackies")
 
-    if temp < 17:
-        top.append("Jumper")
-        reasons.append("Cool (<17°C) → Jumper")
-
-    if temp >= 30:
+    # Top layers
+    if temp < 10:
+        top.append("Thick Jumper or Hoody")
+        reasons.append("Cold (<10°C) → Thick Jumper")
+    elif temp < 17:
+        top.append("Jumper or Hoody")
+        reasons.append("Cool (10–16°C) → Jumper or Hoody")
+    elif temp >= 30:
         top.append("T-shirt or Singlet")
         reasons.append("Hot (≥30°C) → T-shirt or Singlet")
-    elif 20 <= temp < 30:
+    else:
         top.append("T-shirt")
-        reasons.append("Mild (20–29°C) → T-shirt")
-    else:
-        top.append("Long-sleeve shirt")
-        reasons.append("Cool (<20°C) → Long-sleeve")
+        reasons.append("Mild (17–29°C) → T-shirt")
 
-    # === BOTTOMS ===
-    if temp >= 25:
-        bottom.append("Shorts")
-        reasons.append("Warm (≥25°C) → Shorts")
-    elif 17 <= temp < 25:
-        bottom.append("Jeans")
-        reasons.append("Mild (17–24°C) → Jeans")
-    else:
-        bottom.append("Track pants")
-        reasons.append("Cool (<17°C) → Track pants")
-
-    # === EXTRAS ===
+    # Extras
     if rain > 0.3 or showers > 0.3:
         extras.append("Rain jacket")
-        reasons.append("Rain detected → Rain jacket")
+        reasons.append("Rainy → Rain jacket")
 
     if wind > 25:
         extras.append("Windbreaker")
-        reasons.append("Strong wind (>25 km/h) → Windbreaker")
+        reasons.append("Windy (>25 km/h) → Windbreaker")
 
     if temp < 10 or (temp < 13 and wind > 30):
         extras.extend(["Beanie", "Gloves"])
-        reasons.append("Bitter cold or wind chill → Beanie & Gloves")
+        reasons.append("Bitter cold or windchill → Beanie + Gloves")
 
     if humidity > 70 and temp >= 24:
         extras.append("Breathable fabrics")
-        reasons.append("High humidity + warmth → Breathable needed")
+        reasons.append("Humid + warm → Breathable needed")
 
-    if cloud > 80 and 16 <= temp <= 20:
-        top.append("Extra layer (cloud chill)")
-        reasons.append("Overcast and cool → Feels colder")
+    if cloud > 80 and temp < 20:
+        reasons.append("Heavy cloud + cool temp → Feels colder")
 
     return {
         "Top": ", ".join(top),
@@ -140,8 +141,6 @@ def outfit_logic(entry):
         "Extras": ", ".join(extras) if extras else "None",
         "Reasons": "; ".join(reasons)
     }
-
-
 
 def display_outfit(time_label, entry):
     print(f"\nTime: {time_label}")
