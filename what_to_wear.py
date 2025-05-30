@@ -43,6 +43,14 @@ def outfit_logic(entry):
     cloud = entry["cloud"]
     is_day = entry["is_day"]
 
+    # Miserable override: cold, wet, windy, dark
+    if not is_day and wind > 25 and (rain > 0.3 or showers > 0.3) and temp < 20:
+        return {
+            "Top": "Thermal, Jumper, Waterproof jacket",
+            "Bottom": "Track pants",
+            "Extras": "Beanie, Gloves, Windbreaker, Rain jacket"
+        }
+    
     if not is_day:
         temp -= 2  # night-time chill factor
 
